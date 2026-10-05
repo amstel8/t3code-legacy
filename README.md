@@ -64,10 +64,25 @@ Notes:
 
 ## Updating
 
-`git fetch upstream && git checkout main && git merge upstream/main`, then
-re-apply the Electron pin (upstream will have moved it forward again) and
-rebuild with `./rebuild-t3code-macos12.sh`. Follow the update cycle in
+`main` in this repository is the macOS 12 line — it carries the Electron pin, so
+upstream and this fork share history and neither needs rebasing:
+
+```bash
+git fetch upstream
+git merge upstream/main          # expect a conflict on apps/desktop/package.json
+                                # and pnpm-workspace.yaml: keep our 43.x pin
+./rebuild-t3code-macos12.sh      # install -> build -> zip -> sign
+git push origin main
+gh release create v<VERSION>-macos12 --target main release/T3-Code-<VERSION>-x64.zip
+```
+
+Upstream will have moved `electron` forward again, so the pin conflicts on every
+update and our side wins. Then bump the pin to the newest 43.x if one appeared.
+The full update cycle, with the checks and the traps, is in
 [AGENTS.macos12.md](./AGENTS.macos12.md).
+
+**Do not open pull requests against upstream.** Changes here exist to keep this
+fork buildable on Monterey; they are not upstream contributions.
 
 **Never copy `app-update.yml` into the bundle.** It is absent from these builds,
 which is what keeps auto-update switched off. Adding it lets the app pull an
