@@ -840,7 +840,18 @@ it.effect("keeps the last OpenCode 2 model list while a fresh server's stays emp
     NodeAssert.deepEqual(yield* load, [bigPickle]);
     listed = [];
     const fiber = yield* load.pipe(Effect.forkChild);
-    yield* TestClock.adjust("6 seconds");
+    yield* TestClock.adjust("61 seconds");
+    NodeAssert.deepEqual(yield* Fiber.join(fiber), [bigPickle]);
+  }).pipe(Effect.provide(TestClock.layer())),
+);
+
+it.effect("waits for a slow OpenCode 2 cold start before listing models", () =>
+  Effect.gen(function* () {
+    const load = yield* makeOpenCode2ModelLoader(
+      Effect.sleep("45 seconds").pipe(Effect.as([bigPickle])),
+    );
+    const fiber = yield* load.pipe(Effect.forkChild);
+    yield* TestClock.adjust("45 seconds");
     NodeAssert.deepEqual(yield* Fiber.join(fiber), [bigPickle]);
   }).pipe(Effect.provide(TestClock.layer())),
 );

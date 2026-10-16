@@ -414,7 +414,9 @@ function subProviderLabelFor(input: {
  * A server loads its catalog lazily and lists nothing for its first few
  * hundred milliseconds, and a local instance starts a fresh server for each
  * status check. So an empty list is read again for a while, and the last
- * non-empty list stands in if the catalog still has not loaded.
+ * non-empty list stands in if the catalog still has not loaded. This budget
+ * also includes spawning the server: on older CPUs that can use most of a
+ * five-second deadline before the first model request even starts.
  */
 export const makeOpenCode2ModelLoader = <E>(
   list: Effect.Effect<ReadonlyArray<OpenCode2Model>, E>,
@@ -426,7 +428,7 @@ export const makeOpenCode2ModelLoader = <E>(
         until: (models) => models.length > 0,
         schedule: Schedule.spaced("250 millis"),
       }),
-      Effect.timeoutOption("5 seconds"),
+      Effect.timeoutOption("60 seconds"),
       Effect.map((loaded) => {
         if (loaded._tag === "Some" && loaded.value.length > 0) lastLoaded = loaded.value;
         return lastLoaded;

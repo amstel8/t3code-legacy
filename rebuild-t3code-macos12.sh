@@ -57,7 +57,8 @@ node apps/desktop/scripts/ensure-electron-runtime.mjs
 
 # 2. Сборка desktop/server/web
 echo "==> build:desktop"
-node scripts/update-release-package-versions.ts "${T3CODE_VERSION:-0.1.0}"
+RELEASE_VERSION="${T3CODE_VERSION:-$(node -p 'require("./apps/desktop/package.json").version')}"
+node scripts/update-release-package-versions.ts "$RELEASE_VERSION"
 pnpm build:desktop
 
 # 3. Упаковка. Используем zip, а НЕ dmg:

@@ -1,7 +1,7 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег `v0.1.0`; PR в upstream не нужен.
+В `main` влит тег upstream `v0.1.0`; локальная версия — `0.1.1`. PR в upstream не нужен.
 
 ## Runtime
 
@@ -39,12 +39,13 @@ T3CODE_VERSION=<version> ./rebuild-t3code-macos12.sh
 
 Тулчейн: Node 24.13.1, pnpm 11.10.0 и vp в `~/.local/t3-build-tools`;
 Rust и системные build tools доступны через `/opt/local/bin`.
+Без `T3CODE_VERSION` скрипт сохраняет версию из `apps/desktop/package.json`.
 Скрипт устанавливает зависимости, выставляет версию через upstream
 `update-release-package-versions.ts`, собирает desktop/server/web, упаковывает
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.0-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.1-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
@@ -70,6 +71,15 @@ T3CODE_HOME отделяет серверное состояние, но Electro
 Собранный ZIP можно распаковать и установить после закрытия текущего T3 Code.
 Не убивать процессы по шаблону — см. правило 1 в `AGENTS.md`.
 Не запускать проверочный сервер против `~/.t3/userdata`.
+
+Для OpenCode 2 сохранять 60-секундный лимит в
+`packages/provider-opencode/src/server/status.ts` (`makeOpenCode2ModelLoader`).
+Он включает запуск сервера и чтение каталога; прежние 5 секунд на T9900
+обрывали запрос моделей до готовности каталога. Проверка медленного запуска
+находится в `packages/provider-opencode/src/server/status.test.ts`.
+Отдельной настройки таймаута в интерфейсе нет. После обновления upstream
+проверять, что этот лимит и тест сохранились; установка другого готового
+приложения может заменить исправление.
 
 В локальную сборку не добавлять официальный update feed: он может заменить
 наш runtime официальным несовместимым. Не использовать `--mock-updates`.
