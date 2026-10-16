@@ -2798,6 +2798,11 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
       ...(platform === "win" && wslRuntimeBundled ? WSL_RUNTIME_EXTRA_RESOURCES : []),
     ],
   };
+  const customElectronDist = yield* Config.String("T3CODE_ELECTRON_DIST").pipe(Config.option);
+  if (Option.isSome(customElectronDist)) {
+    const path = yield* Path.Path;
+    buildConfig.electronDist = path.resolve(customElectronDist.value);
+  }
   const updateChannel = resolveDesktopUpdateChannel(version);
   if (!isDesktopPreviewVersion(version)) {
     const publishConfig = yield* resolveGitHubPublishConfig(updateChannel);

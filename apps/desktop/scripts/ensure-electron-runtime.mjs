@@ -143,6 +143,25 @@ function installElectronRuntime(electronDir, version) {
 }
 
 export function ensureElectronRuntime() {
+  // Custom Monterey builds must never fall back to the upstream macOS 13 runtime.
+  if (process.env.T3CODE_ELECTRON_DIST) {
+    const dist = NodePath.resolve(process.env.T3CODE_ELECTRON_DIST);
+    const platformPath = getPlatformPath();
+    const electronPath = NodePath.join(dist, platformPath);
+    const expectedVersion = require("electron/package.json").version;
+    const actualVersion = NodeFS.readFileSync(NodePath.join(dist, "version"), "utf8").trim();
+    if (
+      actualVersion !== expectedVersion ||
+      !NodeFS.existsSync(electronPath) ||
+      !isMachO(electronPath)
+    ) {
+      throw new Error(
+        `Invalid custom Electron runtime at ${dist}; expected ${expectedVersion}, got ${actualVersion}`,
+      );
+    }
+    ensureExecutable(electronPath);
+    return electronPath;
+  }
   const electronPackageJsonPath = require.resolve("electron/package.json");
   const electronPackageJson = JSON.parse(NodeFS.readFileSync(electronPackageJsonPath, "utf8"));
   const electronDir = NodePath.dirname(electronPackageJsonPath);

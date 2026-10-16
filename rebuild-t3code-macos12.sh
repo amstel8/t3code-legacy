@@ -1,18 +1,24 @@
 #!/bin/bash
-# Пересборка T3 Code с Electron 43.x, работающего на macOS 12 (Monterey).
-#
-# Почему так: Electron 44+ собран под macOS 13 (minos 13.0) и на Monterey
-# не запускается. Electron 43.x имеет minos 12.0, и это навсегда: Electron
-# режет поддержку ОС на мажорных ветках, так что 43.x — последняя линия
-# под macOS 12 и дальше она не двинется. Проверено на 43.0.0 и 43.7.7.
-# Подтверждено также тем, что в теге v0.0.40 репозитория был electron 43.4.1.
-#
-# Подробности, диагностика и подводные камни: AGENTS.macos12.md
-#
-# Использование:  ./rebuild-t3code-macos12.sh
+# Build the fork with our Electron runtime for Monterey.
+# Set T3CODE_ELECTRON_DIST to an extracted Electron dist (contains Electron.app and version).
 set -euo pipefail
 
-REPO="$HOME/Documents/fan/t3code"
+REPO="$(cd "$(dirname "$0")" && pwd)"
+export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-44.7.2-macos12/dist}"
+# Pin the release and checksum together when upgrading our Electron.
+ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v44.7.2-macos12-x64/electron-v44.7.2-macos12-darwin-x64.zip"
+ELECTRON_SHA256="f513ed330cc170a1339ce264db947d7bfaf39dcf726852c92c57bd8025136de7"
+if [ ! -f "$T3CODE_ELECTRON_DIST/version" ]; then
+  ELECTRON_CACHE="$(dirname "$T3CODE_ELECTRON_DIST")"
+  mkdir -p "$ELECTRON_CACHE"
+  ARCHIVE="$ELECTRON_CACHE/dist.zip"
+  if [ ! -f "$ARCHIVE" ]; then
+    curl -fL --retry 3 "$ELECTRON_URL" -o "$ARCHIVE.part"
+    mv "$ARCHIVE.part" "$ARCHIVE"
+  fi
+  echo "$ELECTRON_SHA256  $ARCHIVE" | shasum -a 256 -c -
+  ditto -x -k "$ARCHIVE" "$T3CODE_ELECTRON_DIST"
+fi
 
 # Тулчейн (Node 24 + pnpm + vp) живёт в ~/.local/t3-build-tools.
 # Симлинки в vp-bin должны быть относительными (../vp-data/current/bin/vp) —
@@ -41,24 +47,17 @@ cd "$REPO"
 echo "==> node $(node -v) / pnpm $(pnpm -v)"
 echo "==> electron: $(node -p "require('./apps/desktop/node_modules/electron/package.json').version" 2>/dev/null || echo 'не установлен')"
 
-# 0. Зависимости. --no-frozen-lockfile обязателен: пин Electron расходится с
-#    upstream-lock, иначе pnpm падает с ERR_PNPM_OUTDATED_LOCKFILE.
-#    CI=true нужен, чтобы pnpm согласился пересоздать node_modules без TTY.
-#    electron в apps/desktop/package.json должен быть 43.x — проверяем.
-echo "==> pnpm install"
-node -e "
-  const v = require('./apps/desktop/package.json').dependencies.electron;
-  if (!v.startsWith('43.')) { console.error('!! electron=' + v + ', ожидался 43.x'); process.exit(1); }
-  console.log('==> electron: ' + v);
-"
+echo "==> pnpm install (custom Electron: $T3CODE_ELECTRON_DIST)"
+export ELECTRON_SKIP_BINARY_DOWNLOAD=1
 CI=true pnpm install --no-frozen-lockfile
 
-# 1. Нативные модули (node-pty и др.) должны быть пересобраны под ABI Electron 43
+# 1. Validate our runtime; never download the upstream macOS 13 binary.
 echo "==> ensure electron runtime"
 node apps/desktop/scripts/ensure-electron-runtime.mjs
 
 # 2. Сборка desktop/server/web
 echo "==> build:desktop"
+node scripts/update-release-package-versions.ts "${T3CODE_VERSION:-0.1.0}"
 pnpm build:desktop
 
 # 3. Упаковка. Используем zip, а НЕ dmg:
@@ -66,7 +65,9 @@ pnpm build:desktop
 #    из svg через `sips` — sips не умеет svg, поэтому dmg-шаг падает.
 #    В zip лежит тот же .app, он просто не обёрнут в образ диска.
 echo "==> packaging zip (arch=x64)"
-node scripts/build-desktop-artifact.ts --platform mac --target zip --arch x64
+# This local Monterey build must not inherit an official update feed from CI.
+unset GITHUB_REPOSITORY T3CODE_DESKTOP_UPDATE_REPOSITORY
+node scripts/build-desktop-artifact.ts --platform mac --target zip --arch x64 --skip-build
 
 # Версия меняется на каждом апстрим-релизе, поэтому берём её из манифеста,
 # а не хардкодим в имени файла.
@@ -76,10 +77,9 @@ ZIP="$REPO/release/T3-Code-${APP_VERSION}-x64.zip"
 
 # 4. Локальная сборка не подписана — Electron требует валидную подпись.
 #    Подписываем ad-hoc; notarization не нужна, т.к. ставим локально.
-STAGE="${TMPDIR:-/tmp}/t3-macos12-stage"
-rm -rf "$STAGE" && mkdir -p "$STAGE"
+STAGE=$(mktemp -d "${TMPDIR:-/tmp}/t3-macos12-stage.XXXXXX")
 unzip -q "$ZIP" -d "$STAGE"
-APP="$STAGE/T3 Code (Alpha).app"
+APP="$STAGE/T3 Code (Beta).app"
 
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 codesign --force --deep --sign - --timestamp=none "$APP"
@@ -88,20 +88,12 @@ echo "==> проверка minos"
 plutil -p "$APP/Contents/Info.plist" | grep -i LSMinimumSystemVersion
 vtool -show-build "$APP/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework" | grep minos
 
-echo
-echo "Готово: $APP  (версия $APP_VERSION)"
-echo
-echo "Установка — по PID, а не по шаблону (правило 1 в upstream AGENTS.md):"
-echo "  PID=\$(ps -Ao pid=,command= | grep -F 'Applications/T3 Code' | grep -v grep | head -1 | awk '{print \$1}')"
-echo "  [ -n \"\$PID\" ] && kill \"\$PID\""
-echo "  rm -rf '/Applications/T3 Code (Alpha).app'"
-echo "  cp -R '$APP' '/Applications/T3 Code (Alpha).app'"
-echo "  open -a '/Applications/T3 Code (Alpha).app'"
-echo
-echo "Не используй pkill -f 'T3 Code': в имени есть скобки (Alpha), которые"
-echo "pgrep/pkill читают как regex-группу, и команда молча ничего не находит."
-echo
-echo "Автообновление отключено само: в локальной сборке нет Resources/app-update.yml,"
-echo "поэтому hasUpdateFeedConfig=false и shouldEnableAutoUpdates=false."
-echo "Не копируй app-update.yml из официального релиза — иначе апдейт снова"
-echo "притащит сборку под macOS 13 и приложение перестанет запускаться."
+codesign --verify --deep --strict "$APP"
+# Ship the signed app in the final archive, not only in the temporary stage.
+ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP.signed.zip"
+mv "$ZIP.signed.zip" "$ZIP"
+# Repacking invalidates the unsigned archive's updater blockmap.
+rm -f "$ZIP.blockmap"
+(cd "$REPO/release" && shasum -a 256 "$(basename "$ZIP")" > SHA256SUMS.txt)
+echo "Готово: $ZIP (версия $APP_VERSION)"
+echo "Подписанное приложение: $APP"
