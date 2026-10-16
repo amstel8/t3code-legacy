@@ -1,7 +1,7 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.0`; локальная версия — `0.1.1`. PR в upstream не нужен.
+В `main` влит тег upstream `v0.1.0`; локальная версия — `0.1.0-1`. PR в upstream не нужен.
 
 ## Runtime
 
@@ -45,7 +45,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.1-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.0-1-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
