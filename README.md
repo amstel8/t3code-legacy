@@ -1,93 +1,67 @@
 > [!IMPORTANT]
-> **This is a fork.** It is not the official T3 Code distribution, and it is not a
-> general-purpose one.
+> **This is a fork for Intel Macs on macOS 12 Monterey**, including older Macs
+> without AVX or Metal. Download builds from
+> [this repository's releases](https://github.com/amstel8/t3code-legacy/releases).
 >
-> This fork exists to build current T3 Code for **Intel Macs on macOS 12 Monterey
-> that have no AVX** — the `MacPro5,1` class of hardware, e.g. a Xeon X5690.
->
-> - **Canonical project and all documentation:** [pingdotgg/t3code](https://github.com/pingdotgg/t3code)
->   and its [`docs/`](https://github.com/pingdotgg/t3code/tree/main/docs). The
->   `docs/` folder here is just a copy of upstream's; treat upstream as the source of truth.
-> - **Do not use upstream's installers for this machine.** `install.sh`, the
->   Homebrew cask, and upstream's `.dmg`/`.zip` releases are all built for
->   macOS 13 or newer and will not launch here. Releases published in _this_
->   repository are the ones that work.
-> - **Fork-specific build notes:** [AGENTS.macos12.md](./AGENTS.macos12.md) and
->   [`rebuild-t3code-macos12.sh`](./rebuild-t3code-macos12.sh).
+> The canonical project and its documentation are at
+> [pingdotgg/t3code](https://github.com/pingdotgg/t3code). Upstream installers
+> and stock Electron 44 binaries target macOS 13 or newer.
 
-## What this fork changes
+## Monterey and OpenGL support
 
-Exactly one thing in the build inputs: the desktop app is pinned to **Electron
-43.x**, the last Electron line built against macOS 12.
+This fork uses our **custom Electron 44.7.2 / Chromium 152 build for macOS 12**,
+from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.7.2-macos12-x64).
+It replaces the earlier Electron 43.x pin.
 
-Upstream ships macOS 13+ artifacts from 0.0.41 onwards. Electron 44+ binaries
-carry `LSMinimumSystemVersion: 13.0` and a Mach-O `minos 13.0`, so
-LaunchServices refuses the app with `kLSIncompatibleSystemVersionErr`. Lowering
-`minos` by hand does not help, because those binaries genuinely call macOS 13
-APIs such as `SMAppService`. Electron 43.x references them only as weak
-imports, so it loads on Monterey.
+On Macs without a Metal device, the runtime automatically selects **ANGLE OpenGL**.
+The same runtime was verified on a MacBookPro7,1 with a Core 2 Duo and GeForce
+320M: WebGL reports NVIDIA OpenGL 3.3, and the GPU process uses `--use-angle=gl`.
+OpenGL capabilities depend on the installed graphics driver.
 
-That pin is stable, not a stopgap: Electron drops OS support on **major**
-version lines, so 43.x is the last line that will ever target macOS 12, and it
-is heading into EOL. Verified `minos 12.0` on both ends of the line (43.0.0 and
-43.7.7).
+The fork also retains a 60-second OpenCode 2 model discovery deadline so older
+CPUs have time to start the server and load its catalog.
 
-The artifacts here are `x86_64`, built at baseline `x86-64` so they need no AVX.
-That has been confirmed on a CPU reporting only SSE4.1/SSE4.2 — the app runs
-with no `SIGILL` and no crash reports.
+The build script pins the Electron release URL and SHA256 and passes the custom
+runtime to both the launcher and electron-builder. Changing only the npm Electron
+version would still select incompatible stock binaries.
 
-Functional parity with upstream is otherwise unchanged; the fork adds no
-features of its own.
+## Installing
 
-## Installing on macOS 12 without AVX
+Download the `T3-Code-<version>-x64.zip` asset from
+[releases](https://github.com/amstel8/t3code-legacy/releases), verify it with the
+attached `SHA256SUMS.txt`, and extract it. Quit the previous T3 Code before
+copying **T3 Code (Beta).app** to `/Applications`.
 
-Grab the macOS x64 asset from this repository's [releases](https://github.com/amstel8/t3code-legacy/releases),
-unzip it, and move the app to `/Applications`:
+The ZIP already contains an ad-hoc signed application. It has no Apple Developer
+ID signature or notarization. If macOS blocks the downloaded app:
 
 ```bash
-unzip T3-Code-*-x64.zip
-xattr -dr com.apple.quarantine "T3 Code (Alpha).app"
-codesign --force --deep --sign - --timestamp=none "T3 Code (Alpha).app"
-cp -R "T3 Code (Alpha).app" /Applications/
-open -a "/Applications/T3 Code (Alpha).app"
+xattr -dr com.apple.quarantine "/Applications/T3 Code (Beta).app"
 ```
 
-Notes:
+ZIP is used because the upstream DMG background conversion uses `sips`, which
+cannot read SVG on Monterey. Server data lives outside the app bundle in
+`~/.t3/userdata`; do not delete that directory when replacing the application.
 
-- Only `.zip` assets are published. There is no `.dmg`: the upstream DMG step
-  converts an SVG with `sips`, which does not read SVG, so that step fails on
-  this machine. The zip contains the identical `.app`.
-- The ad-hoc `codesign` above is required. Electron refuses to start without a
-  valid signature, and notarization needs a developer account.
-- Your data lives in `~/.t3/userdata` (chats, settings, database), outside the
-  app bundle, so replacing the bundle does not lose anything.
+## Updating and rebuilding
 
-## Updating
-
-`main` in this repository is the macOS 12 line — it carries the Electron pin, so
-upstream and this fork share history and neither needs rebasing:
+`origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
+Merge the desired upstream release tag, retain our custom Electron version and
+OpenCode cold-start deadline when resolving conflicts, then run:
 
 ```bash
-git fetch upstream
-git merge upstream/main          # expect a conflict on apps/desktop/package.json
-                                # and pnpm-workspace.yaml: keep our 43.x pin
-./rebuild-t3code-macos12.sh      # install -> build -> zip -> sign
-git push origin main
-gh release create v<VERSION>-macos12 --target main release/T3-Code-<VERSION>-x64.zip
+T3CODE_VERSION=<version> ./rebuild-t3code-macos12.sh
 ```
 
-Upstream will have moved `electron` forward again, so the pin conflicts on every
-update and our side wins. Then bump the pin to the newest 43.x if one appeared.
-The full update cycle, with the checks and the traps, is in
-[AGENTS.macos12.md](./AGENTS.macos12.md).
+The script downloads and verifies our Electron archive if needed, builds the
+app, signs it ad-hoc, and packages the signed ZIP. Build prerequisites and
+verification steps are in [AGENTS.macos12.md](./AGENTS.macos12.md).
 
-**Do not open pull requests against upstream.** Changes here exist to keep this
-fork buildable on Monterey; they are not upstream contributions.
+**Do not open pull requests against upstream for these fork-specific changes.**
 
-**Never copy `app-update.yml` into the bundle.** It is absent from these builds,
-which is what keeps auto-update switched off. Adding it lets the app pull an
-upstream macOS 13 build over itself and stop launching, which is the exact
-failure this fork exists to avoid. Turn down update prompts in the UI.
+**Do not add the official `app-update.yml` to the bundle.** These builds omit
+that feed so an automatic upstream update cannot replace the custom runtime
+with an incompatible stock build. Update manually from this fork's releases.
 
 ---
 
