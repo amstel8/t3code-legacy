@@ -5,18 +5,18 @@
 
 ## Runtime
 
-Теперь используем **собственный Electron 44.7.2**, собранный для Monterey,
+Теперь используем **собственный Electron 44.9.0**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.7.2-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.9.0-macos12-x64
 
-Архив: `electron-v44.7.2-macos12-darwin-x64.zip`.
-SHA256: `f513ed330cc170a1339ce264db947d7bfaf39dcf726852c92c57bd8025136de7`.
+Архив: `electron-v44.9.0-macos12-darwin-x64.zip`.
+SHA256: `7e0be42f00e066d746bb7ab0958ecbe99fa94fb5df97e346b408cc8ae58837e2`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-44.7.2-macos12/dist`.
+`~/.local/t3-build-tools/electron-44.9.0-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -58,10 +58,15 @@ x64 ZIP, подписывает приложение ad-hoc и перепако�
 `process.versions.electron`/ABI. Глобальные проверки репозитория не запускать
 (см. `AGENTS.md`). GUI/браузер запускать только по запросу пользователя.
 
-Проверено также на MacBookPro7,1 (Core 2 Duo, GeForce 320M, macOS 12.7.6):
+Сборка T3 на Electron 44.7.2 проверена на MacBookPro7,1
+(Core 2 Duo, GeForce 320M, macOS 12.7.6):
 подпись, запуск GUI/backend, загрузка ffi-rs/keyring/fff/passkeys и реальный
 PTY-процесс работают. WebGL сообщает NVIDIA OpenGL 3.3 через ANGLE;
 GPU-процесс автоматически получает `--use-angle=gl` без флагов на главном процессе.
+
+Electron 44.9.0 отдельно проверен на этом Mac: автоматический OpenGL,
+отрисовка WebGL1 и аппаратный композитинг. Проверка Metal выполнена
+на Radeon RX 6800 XT.
 
 Для изолированной проверки GUI задавать **и `HOME`, и `T3CODE_HOME`**:
 T3CODE_HOME отделяет серверное состояние, но Electron-профиль на macOS

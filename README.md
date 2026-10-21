@@ -9,12 +9,12 @@
 
 ## Monterey and OpenGL support
 
-This fork uses our **custom Electron 44.7.2 / Chromium 152 build for macOS 12**,
-from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.7.2-macos12-x64).
+This fork uses our **custom Electron 44.9.0 / Chromium 152 build for macOS 12**,
+from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.9.0-macos12-x64).
 It replaces the earlier Electron 43.x pin.
 
 On Macs without a Metal device, the runtime automatically selects **ANGLE OpenGL**.
-The same runtime was verified on a MacBookPro7,1 with a Core 2 Duo and GeForce
+This runtime was verified on a MacBookPro7,1 with a Core 2 Duo and GeForce
 320M: WebGL reports NVIDIA OpenGL 3.3, and the GPU process uses `--use-angle=gl`.
 OpenGL capabilities depend on the installed graphics driver.
 
