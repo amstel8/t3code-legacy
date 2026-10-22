@@ -225,7 +225,16 @@ const mergeProviderModels = (
   const previousBySlug = new Map(previousModels.map((model) => [model.slug, model] as const));
   const mergedModels = nextModels.map((model) => {
     const previousModel = previousBySlug.get(model.slug);
-    if (!previousModel || hasModelCapabilities(model) || !hasModelCapabilities(previousModel)) {
+    if (
+      !previousModel ||
+      hasModelCapabilities(model) ||
+      !hasModelCapabilities(previousModel) ||
+      // An OpenCode catalog can explicitly report no model options. A completed
+      // refresh must clear stale variants instead of carrying them into the new model.
+      (provider.driver === ProviderDriverKind.make("opencode") &&
+        !shouldRetainMissingModels &&
+        model.capabilities?.optionDescriptors !== undefined)
+    ) {
       return model;
     }
     return {
