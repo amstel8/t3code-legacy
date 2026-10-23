@@ -1,7 +1,8 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.1`; локальная версия — `0.1.1`. PR в upstream не нужен.
+В `main` влит тег upstream `v0.1.2`; локальная версия — `0.1.2`.
+Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
@@ -37,15 +38,15 @@ runtime, проверяет SHA256 и распаковывает в
 T3CODE_VERSION=<version> ./rebuild-t3code-macos12.sh
 ```
 
-Тулчейн: Node 24.13.1, pnpm 11.10.0 и vp в `~/.local/t3-build-tools`;
+Тулчейн: Node 24.13.1, pnpm 12.14.0 и vp в `~/.local/t3-build-tools`;
 Rust и системные build tools доступны через `/opt/local/bin`.
 Без `T3CODE_VERSION` скрипт сохраняет версию из `apps/desktop/package.json`.
 Скрипт устанавливает зависимости, выставляет версию через upstream
-`update-release-package-versions.ts`, собирает desktop/server/web, упаковывает
+канонический упаковщик с восстановлением манифестов, собирает desktop/server/web, упаковывает
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.1-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.2-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение

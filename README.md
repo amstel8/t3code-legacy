@@ -21,7 +21,7 @@ OpenGL capabilities depend on the installed graphics driver.
 The fork also retains a 60-second OpenCode 2 model discovery deadline so older
 CPUs have time to start the server and load its catalog.
 
-Release **0.1.1-2** also fixes stale OpenCode model options after a successful
+The fork also fixes stale OpenCode model options after a successful
 provider refresh. When OpenCode reports an empty options list, T3 clears cached
 variants such as `medium` instead of offering an unsupported choice. Failed or
 incomplete discovery still preserves the last known catalog. This applies to
@@ -53,6 +53,9 @@ cannot read SVG on Monterey. Server data lives outside the app bundle in
 `~/.t3/userdata`; do not delete that directory when replacing the application.
 
 ## Updating and rebuilding
+
+The current upstream baseline is **v0.1.2**. See [FORK.md](FORK.md) for the
+compatibility differences, regression checks and merge procedure to preserve them.
 
 `origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
 Merge the desired upstream release tag, retain our custom Electron version and

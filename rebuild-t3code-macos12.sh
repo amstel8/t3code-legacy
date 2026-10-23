@@ -36,11 +36,20 @@ TOOLS="$HOME/.local/t3-build-tools"
 }
 
 export PATH="$TOOLS/node-v24.13.1-darwin-x64/bin:$TOOLS/npm-global/bin:$TOOLS/vp-bin:/opt/local/bin:$PATH"
+# Match the upstream package-manager pin without replacing other projects' pnpm.
+PNPM_VERSION=$(node -p 'require(process.argv[1]).packageManager.split("@")[1]' "$REPO/package.json")
+PNPM_HOME="$TOOLS/pnpm-$PNPM_VERSION"
+if [ ! -x "$PNPM_HOME/node_modules/.bin/pnpm" ]; then
+  npm install --prefix "$PNPM_HOME" --no-save "pnpm@$PNPM_VERSION"
+fi
+export PATH="$PNPM_HOME/node_modules/.bin:$PATH"
 export npm_config_prefix="$TOOLS/npm-global"
 export VP_BIN_DIR="$TOOLS/vp-bin"
 export VP_DATA_DIR="$TOOLS/vp-data"
 export VP_CACHE_DIR="$TOOLS/vp-cache"
 export VP_NODE_MANAGER=no
+# The toolchain uses native Node; do not inherit Electron mode from a T3 agent shell.
+unset ELECTRON_RUN_AS_NODE ELECTRON_NO_ASAR
 
 cd "$REPO"
 
@@ -49,37 +58,34 @@ echo "==> electron: $(node -p "require('./apps/desktop/node_modules/electron/pac
 
 echo "==> pnpm install (custom Electron: $T3CODE_ELECTRON_DIST)"
 export ELECTRON_SKIP_BINARY_DOWNLOAD=1
-CI=true pnpm install --no-frozen-lockfile
+CI=true pnpm install --frozen-lockfile
 
 # 1. Validate our runtime; never download the upstream macOS 13 binary.
 echo "==> ensure electron runtime"
-node apps/desktop/scripts/ensure-electron-runtime.mjs
+ELECTRON_EXECUTABLE=$(node apps/desktop/scripts/ensure-electron-runtime.mjs)
+for MACHO in "$ELECTRON_EXECUTABLE" "$T3CODE_ELECTRON_DIST/Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"; do
+  MIN_OS=$(otool -l "$MACHO" | awk '$1 == "minos" && !seen++ { print $2 }')
+  [ "$MIN_OS" = "12.0" ] || { echo "!! expected macOS 12.0 runtime, got $MIN_OS: $MACHO" >&2; exit 1; }
+done
+ELECTRON_RUN_AS_NODE=1 "$ELECTRON_EXECUTABLE" -e 'console.log("Runtime:", process.versions.electron, "Node:", process.versions.node)'
 
-# 2. Сборка desktop/server/web
-echo "==> build:desktop"
-RELEASE_VERSION="${T3CODE_VERSION:-$(node -p 'require("./apps/desktop/package.json").version')}"
-node scripts/update-release-package-versions.ts "$RELEASE_VERSION"
-pnpm build:desktop
+# 2. Verify compatibility behavior before producing the distributable.
+pnpm verify:legacy
 
-# 3. Упаковка. Используем zip, а НЕ dmg:
-#    dmg требует assets/dmg/dmg-background-<channel>.png, который генерируется
-#    из svg через `sips` — sips не умеет svg, поэтому dmg-шаг падает.
-#    В zip лежит тот же .app, он просто не обёрнут в образ диска.
-echo "==> packaging zip (arch=x64)"
-# This local Monterey build must not inherit an official update feed from CI.
+# 3. The canonical packager stamps and restores versions under its build lock.
+# ZIP avoids Monterey's sips failing to convert the upstream SVG DMG background.
+APP_VERSION="${T3CODE_VERSION:-$(node -p 'require("./apps/desktop/package.json").version')}"
 unset GITHUB_REPOSITORY T3CODE_DESKTOP_UPDATE_REPOSITORY
-node scripts/build-desktop-artifact.ts --platform mac --target zip --arch x64 --skip-build
+export MACOSX_DEPLOYMENT_TARGET=12.0
+node scripts/build-desktop-artifact.ts --platform mac --target zip --arch x64 --build-version "$APP_VERSION"
 
-# Версия меняется на каждом апстрим-релизе, поэтому берём её из манифеста,
-# а не хардкодим в имени файла.
-APP_VERSION=$(node -p "require('./apps/desktop/package.json').version")
 ZIP="$REPO/release/T3-Code-${APP_VERSION}-x64.zip"
 [ -f "$ZIP" ] || { echo "!! артефакт не найден: $ZIP" >&2; exit 1; }
 
 # 4. Локальная сборка не подписана — Electron требует валидную подпись.
 #    Подписываем ad-hoc; notarization не нужна, т.к. ставим локально.
 STAGE=$(mktemp -d "${TMPDIR:-/tmp}/t3-macos12-stage.XXXXXX")
-unzip -q "$ZIP" -d "$STAGE"
+ditto -x -k "$ZIP" "$STAGE"
 APP="$STAGE/T3 Code (Beta).app"
 
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
