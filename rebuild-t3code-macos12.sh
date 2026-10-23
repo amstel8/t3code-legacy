@@ -38,11 +38,11 @@ TOOLS="$HOME/.local/t3-build-tools"
 export PATH="$TOOLS/node-v24.13.1-darwin-x64/bin:$TOOLS/npm-global/bin:$TOOLS/vp-bin:/opt/local/bin:$PATH"
 # Match the upstream package-manager pin without replacing other projects' pnpm.
 PNPM_VERSION=$(node -p 'require(process.argv[1]).packageManager.split("@")[1]' "$REPO/package.json")
-PNPM_HOME="$TOOLS/pnpm-$PNPM_VERSION"
-if [ ! -x "$PNPM_HOME/node_modules/.bin/pnpm" ]; then
-  npm install --prefix "$PNPM_HOME" --no-save "pnpm@$PNPM_VERSION"
+LEGACY_PNPM_DIR="$TOOLS/pnpm-$PNPM_VERSION"
+if [ ! -x "$LEGACY_PNPM_DIR/node_modules/.bin/pnpm" ]; then
+  npm install --prefix "$LEGACY_PNPM_DIR" --no-save "pnpm@$PNPM_VERSION"
 fi
-export PATH="$PNPM_HOME/node_modules/.bin:$PATH"
+export PATH="$LEGACY_PNPM_DIR/node_modules/.bin:$PATH"
 export npm_config_prefix="$TOOLS/npm-global"
 export VP_BIN_DIR="$TOOLS/vp-bin"
 export VP_DATA_DIR="$TOOLS/vp-data"

@@ -34,7 +34,10 @@ around a stale catalog.
 3. Use the package-manager version pinned by the merged `package.json`.
    The build wrapper installs that pnpm into its own versioned tool directory.
    If dependency pins changed, deliberately regenerate `pnpm-lock.yaml` once;
-   ordinary builds use `--frozen-lockfile`.
+   ordinary builds use `--frozen-lockfile`. After a pnpm major upgrade, obsolete
+   workspace `node_modules/.bin/tsc` shims can still point at the removed compiler.
+   Remove those generated, broken shims or recreate the affected dependency
+   directories, then reinstall; do not downgrade the compiler or commit `node_modules`.
 4. Set the four release package versions with
    `node scripts/update-release-package-versions.ts X.Y.Z`, update this baseline,
    and commit the resolved merge. Preserve the old release tag for rollback.
