@@ -1,6 +1,6 @@
 # Legacy Monterey fork
 
-Upstream baseline: **`pingdotgg/t3code` tag `v0.1.2`**.
+Upstream baseline: **`pingdotgg/t3code` tag `v0.1.3`**.
 Our default branch is `main`; `origin` is `amstel8/t3code-legacy` and `upstream`
 is `pingdotgg/t3code`. Use upstream tags and merge them; keep the fork commits
 in history rather than copying a new source snapshot over this checkout.

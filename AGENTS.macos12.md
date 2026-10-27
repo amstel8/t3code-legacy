@@ -1,7 +1,7 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.2`; локальная версия — `0.1.2`.
+В `main` влит тег upstream `v0.1.3`; локальная версия — `0.1.3`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
@@ -46,7 +46,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.2-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.3-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
@@ -82,7 +82,7 @@ T3CODE_HOME отделяет серверное состояние, но Electro
 `packages/provider-opencode/src/server/status.ts` (`makeOpenCode2ModelLoader`).
 Он включает запуск сервера и чтение каталога; прежние 5 секунд на T9900
 обрывали запрос моделей до готовности каталога. Проверка медленного запуска
-находится в `packages/provider-opencode/src/server/status.test.ts`.
+находится в `packages/provider-opencode/src/server/status.legacy.test.ts`.
 Отдельной настройки таймаута в интерфейсе нет. После обновления upstream
 проверять, что этот лимит и тест сохранились; установка другого готового
 приложения может заменить исправление.

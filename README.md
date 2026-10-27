@@ -54,7 +54,7 @@ cannot read SVG on Monterey. Server data lives outside the app bundle in
 
 ## Updating and rebuilding
 
-The current upstream baseline is **v0.1.2**. See [FORK.md](FORK.md) for the
+The current upstream baseline is **v0.1.3**. See [FORK.md](FORK.md) for the
 compatibility differences, regression checks and merge procedure to preserve them.
 
 `origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
@@ -173,6 +173,7 @@ We are (mostly) not accepting contributions yet. Small fixes may be considered. 
 
 Full docs live in [docs/](./docs). There's no docs site yet.
 
+- [FAQ](./docs/user/faq.md)
 - [Install and first run](./docs/user/install.md)
 - [Permission modes](./docs/user/permission-modes.md)
 - [Keyboard shortcuts](./docs/user/keybindings.md)
