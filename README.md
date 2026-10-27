@@ -7,10 +7,14 @@
 > [pingdotgg/t3code](https://github.com/pingdotgg/t3code). Upstream installers
 > and stock Electron 44 binaries target macOS 13 or newer.
 
+New builds check this fork's GitHub Releases from the app's existing update
+controls. Downloads use a signed manifest and include our compatible Electron.
+Older builds need one manual installation to enable this updater.
+
 ## Monterey and OpenGL support
 
-This fork uses our **custom Electron 44.9.0 / Chromium 152 build for macOS 12**,
-from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.9.0-macos12-x64).
+This fork uses our **custom Electron 45.0.0 / Chromium 156 build for macOS 12**,
+from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.0.0-macos12-x64).
 It replaces the earlier Electron 43.x pin.
 
 On Macs without a Metal device, the runtime automatically selects **ANGLE OpenGL**.
@@ -54,7 +58,7 @@ cannot read SVG on Monterey. Server data lives outside the app bundle in
 
 ## Updating and rebuilding
 
-The current upstream baseline is **v0.1.2**. See [FORK.md](FORK.md) for the
+The current upstream baseline is **v0.1.3**. See [FORK.md](FORK.md) for the
 compatibility differences, regression checks and merge procedure to preserve them.
 
 `origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
@@ -173,6 +177,7 @@ We are (mostly) not accepting contributions yet. Small fixes may be considered. 
 
 Full docs live in [docs/](./docs). There's no docs site yet.
 
+- [FAQ](./docs/user/faq.md)
 - [Install and first run](./docs/user/install.md)
 - [Permission modes](./docs/user/permission-modes.md)
 - [Keyboard shortcuts](./docs/user/keybindings.md)

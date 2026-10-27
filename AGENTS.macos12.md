@@ -1,23 +1,23 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.2`; локальная версия — `0.1.2`.
+В `main` влит тег upstream `v0.1.3`; локальная версия — `0.1.3`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
-Теперь используем **собственный Electron 44.9.0**, собранный для Monterey,
+Теперь используем **собственный Electron 45.0.0**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.9.0-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.0.0-macos12-x64
 
-Архив: `electron-v44.9.0-macos12-darwin-x64.zip`.
-SHA256: `7e0be42f00e066d746bb7ab0958ecbe99fa94fb5df97e346b408cc8ae58837e2`.
+Архив: `electron-v45.0.0-macos12-darwin-x64.zip`.
+SHA256: `2807aaa78ef959402e62cb5cc348d37809d0a77470c2b1883a70ccd6ae0fd1ed`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-44.9.0-macos12/dist`.
+`~/.local/t3-build-tools/electron-45.0.0-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -46,7 +46,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.2-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.3-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
@@ -65,7 +65,7 @@ x64 ZIP, подписывает приложение ad-hoc и перепако�
 PTY-процесс работают. WebGL сообщает NVIDIA OpenGL 3.3 через ANGLE;
 GPU-процесс автоматически получает `--use-angle=gl` без флагов на главном процессе.
 
-Electron 44.9.0 отдельно проверен на этом Mac: автоматический OpenGL,
+Electron 45.0.0 отдельно проверен на этом Mac: автоматический OpenGL,
 отрисовка WebGL1 и аппаратный композитинг. Проверка Metal выполнена
 на Radeon RX 6800 XT.
 
@@ -87,5 +87,7 @@ T3CODE_HOME отделяет серверное состояние, но Electro
 проверять, что этот лимит и тест сохранились; установка другого готового
 приложения может заменить исправление.
 
+Обновления из форка включены через подписанный `legacy-update.json`;
+штатный интерфейс проверяет только `amstel8/t3code-legacy`.
 В локальную сборку не добавлять официальный update feed: он может заменить
 наш runtime официальным несовместимым. Не использовать `--mock-updates`.
