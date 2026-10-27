@@ -23,7 +23,7 @@
     "build": "vp run --filter './apps/*' build",
     "build:marketing": "vp run --filter @t3tools/marketing build",
     "build:desktop": "vp run --filter @t3tools/desktop --filter t3 build",
-    "verify:legacy": "vp test run apps/server/src/provider/ProviderRegistry.test.ts apps/server/src/provider/ProviderRegistry.legacy.test.ts packages/provider-opencode/src/server/status.test.ts packages/provider-opencode/src/server/status.legacy.test.ts scripts/build-desktop-artifact.test.ts",
+    "verify:legacy": "vp test run apps/server/src/provider/ProviderRegistry.test.ts apps/server/src/provider/ProviderRegistry.legacy.test.ts packages/provider-opencode/src/server/status.test.ts packages/provider-opencode/src/server/status.legacy.test.ts scripts/build-desktop-artifact.test.ts apps/desktop/src/updates/legacyManifest.test.ts apps/desktop/src/updates/LegacyUpdater.test.ts apps/desktop/src/updates/DesktopUpdates.test.ts scripts/legacy-update-install.test.mjs",
     "build:resource-monitor": "cargo build --locked --release --manifest-path native/resource-monitor/Cargo.toml",
     "typecheck": "vp run -r --cache --concurrency-limit 4 typecheck",
     "tc": "vp run -r --cache --concurrency-limit 4 typecheck",

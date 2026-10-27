@@ -4,10 +4,10 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")" && pwd)"
-export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-44.9.0-macos12/dist}"
+export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-45.0.0-macos12/dist}"
 # Pin the release and checksum together when upgrading our Electron.
-ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v44.9.0-macos12-x64/electron-v44.9.0-macos12-darwin-x64.zip"
-ELECTRON_SHA256="7e0be42f00e066d746bb7ab0958ecbe99fa94fb5df97e346b408cc8ae58837e2"
+ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v45.0.0-macos12-x64/electron-v45.0.0-macos12-darwin-x64.zip"
+ELECTRON_SHA256="2807aaa78ef959402e62cb5cc348d37809d0a77470c2b1883a70ccd6ae0fd1ed"
 if [ ! -f "$T3CODE_ELECTRON_DIST/version" ]; then
   ELECTRON_CACHE="$(dirname "$T3CODE_ELECTRON_DIST")"
   mkdir -p "$ELECTRON_CACHE"
@@ -88,6 +88,13 @@ STAGE=$(mktemp -d "${TMPDIR:-/tmp}/t3-macos12-stage.XXXXXX")
 ditto -x -k "$ZIP" "$STAGE"
 APP="$STAGE/T3 Code (Beta).app"
 
+# Enable only our signed legacy feed; the stock updater feed remains absent.
+cp "$REPO/scripts/legacy-update-install.mjs" "$APP/Contents/Resources/legacy-update-install.mjs"
+node --input-type=module - "$REPO/scripts/legacy-update-public.pem" "$APP/Contents/Resources/legacy-update-config.json" <<'JS'
+import { readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+writeFileSync(process.argv[3], JSON.stringify({ publicKey: readFileSync(process.argv[2], 'utf8'), bundleId: 'com.t3tools.t3code', sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), electron: JSON.parse(readFileSync('apps/desktop/package.json')).dependencies.electron }));
+JS
 xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 codesign --force --deep --sign - --timestamp=none "$APP"
 

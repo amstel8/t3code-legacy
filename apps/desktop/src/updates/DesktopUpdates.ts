@@ -49,6 +49,8 @@ import {
   resolveNotAppliedInstallVersion,
 } from "./updateMachine.ts";
 
+import { hasLegacyUpdateConfig } from "./LegacyUpdater.ts";
+
 const AUTO_UPDATE_STARTUP_DELAY = "15 seconds";
 const AUTO_UPDATE_POLL_INTERVAL = "4 minutes";
 const PREPARED_INSTALL_CHECK_WAIT = Duration.seconds(90);
@@ -408,7 +410,12 @@ export const make = Effect.gen(function* () {
       : false;
 
   const hasUpdateFeedConfig = Ref.get(appUpdateYmlConfigRef).pipe(
-    Effect.map((appUpdateYmlConfig) => Option.isSome(appUpdateYmlConfig) || config.mockUpdates),
+    Effect.map(
+      (appUpdateYmlConfig) =>
+        Option.isSome(appUpdateYmlConfig) ||
+        config.mockUpdates ||
+        (environment.platform === "darwin" && hasLegacyUpdateConfig(environment.resourcesPath)),
+    ),
   );
 
   const resolveDisabledReason = Effect.gen(function* () {

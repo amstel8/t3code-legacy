@@ -9,12 +9,12 @@ in history rather than copying a new source snapshot over this checkout.
 
 | Difference                                                                                                                        | Owner                                                                                                                         | Regression proof                                                                                     |
 | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Custom Electron 44.9.0, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
-| Runtime override in development and packaging                                                                                     | `apps/desktop/scripts/ensure-electron-runtime.mjs`, `scripts/build-desktop-artifact.ts`                                       | `scripts/build-desktop-artifact.test.ts` checks custom `electronDist` and no update feed             |
+| Custom Electron 45.0.0, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
+| Runtime override and Electron 45 ABI 150 (`patches/node-abi@4.33.0.patch`)                                                        | `apps/desktop/scripts/ensure-electron-runtime.mjs`, `scripts/build-desktop-artifact.ts`                                       | `scripts/build-desktop-artifact.test.ts` checks custom `electronDist` and no update feed             |
 | 60-second OpenCode 2 discovery deadline, including cold startup and stabilization                                                 | `packages/provider-opencode/src/server/status.ts`                                                                             | `status.legacy.test.ts`: 45-second cold start, bounded changing/empty catalogs and slow warm refresh |
 | A successful OpenCode refresh with explicit empty options clears stale variants; partial/failed discovery retains useful metadata | `apps/server/src/provider/ProviderRegistry.ts`                                                                                | `ProviderRegistry.legacy.test.ts`: ready/empty, error/empty and missing metadata for several models  |
 | Build on our Monterey-compatible Node 24.13.1 toolchain; allow upstream Node 26.12.1 as well                                      | root `package.json`, `rebuild-t3code-macos12.sh`                                                                              | Targeted typechecks, actual bundle load and packaged Node runtime                                    |
-| Signed ZIP and no upstream update feed                                                                                            | `rebuild-t3code-macos12.sh`                                                                                                   | Verify signature, checksums and absence of `app-update.yml` in the final archive                     |
+| Signed ZIP, signed fork manifest and no upstream update feed                                                                      | `rebuild-t3code-macos12.sh`                                                                                                   | Verify signature, checksums and absence of `app-update.yml` in the final archive                     |
 
 The 30-second **OpenCode server plugin activation** wait is a separate change
 in [opencode-legacy-cpu](https://github.com/amstel8/opencode-legacy-cpu), not a
@@ -60,3 +60,33 @@ The wrapper builds a desktop application. Upstream standalone server/CLI
 release scripts and their Node 26 downloads are not a legacy CPU distribution.
 [AGENTS.macos12.md](AGENTS.macos12.md) contains local toolchain and installation
 instructions; [README.md](README.md) is the download entry point.
+
+## Release automation and in-app updates
+
+`node scripts/legacy-upstream.mjs check` discovers the latest stable upstream.
+`prepare [vX.Y.Z]` creates a sibling worktree and merges without committing;
+conflicts stop there for review. Preserve the compatibility table above, stamp
+the four release package versions, and commit the reviewed source. In that
+worktree run `build vX.Y.Z`, then `draft vX.Y.Z` to push its branch and create
+a draft release with ZIP, checksums and `legacy-update.json`. Publication and
+installation stay separate from preparation; publish only after hardware checks.
+
+The Monterey wrapper embeds a public Ed25519 key and the standalone installer.
+The existing desktop update UI checks this fork's latest GitHub release, accepts
+only signed stable x64/macOS 12 manifests, verifies the downloaded ZIP, signature,
+app identity, minimum OS and Electron version, then stages on the install volume.
+On restart the helper waits for the app/backend to exit, copies database files,
+retains the previous app, replaces it, and records backend readiness. Backups stay
+beside the installed app in its hidden `.t3-update-*` directory; install logs are
+under the Electron profile's `legacy-updates/install-*`. Failed replacement
+restores the old app. A failure after launch retains backups for manual recovery,
+because a newer backend may already have migrated the database.
+
+The private release key is **outside the repository** at
+`~/.local/t3-build-tools/keys/t3code-update.pem`, or the path supplied by
+`T3CODE_UPDATE_PRIVATE_KEY`. Back it up separately. Never commit it, upload it
+as an asset, or regenerate it for routine builds. The public key is tracked in
+`scripts/legacy-update-public.pem`. `legacy-release.mjs sign X.Y.Z` requires a
+clean committed source and the matching private key. Existing releases without
+a signed manifest are ignored; old installations need one manual installation
+of the first updater-enabled build. Only the stable channel is supported.

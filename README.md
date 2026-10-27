@@ -7,10 +7,14 @@
 > [pingdotgg/t3code](https://github.com/pingdotgg/t3code). Upstream installers
 > and stock Electron 44 binaries target macOS 13 or newer.
 
+New builds check this fork's GitHub Releases from the app's existing update
+controls. Downloads use a signed manifest and include our compatible Electron.
+Older builds need one manual installation to enable this updater.
+
 ## Monterey and OpenGL support
 
-This fork uses our **custom Electron 44.9.0 / Chromium 152 build for macOS 12**,
-from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v44.9.0-macos12-x64).
+This fork uses our **custom Electron 45.0.0 / Chromium 156 build for macOS 12**,
+from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.0.0-macos12-x64).
 It replaces the earlier Electron 43.x pin.
 
 On Macs without a Metal device, the runtime automatically selects **ANGLE OpenGL**.
