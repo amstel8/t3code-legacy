@@ -4,10 +4,10 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")" && pwd)"
-export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-45.0.0-macos12/dist}"
+export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-45.1.0-macos12/dist}"
 # Pin the release and checksum together when upgrading our Electron.
-ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v45.0.0-macos12-x64/electron-v45.0.0-macos12-darwin-x64.zip"
-ELECTRON_SHA256="2807aaa78ef959402e62cb5cc348d37809d0a77470c2b1883a70ccd6ae0fd1ed"
+ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v45.1.0-macos12-x64/electron-v45.1.0-macos12-darwin-x64.zip"
+ELECTRON_SHA256="fc813a0718e253f730c8b3c68225637b9d938b46910106add56f25c21d0c474f"
 if [ ! -f "$T3CODE_ELECTRON_DIST/version" ]; then
   ELECTRON_CACHE="$(dirname "$T3CODE_ELECTRON_DIST")"
   mkdir -p "$ELECTRON_CACHE"

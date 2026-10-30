@@ -1,23 +1,23 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.3`; локальная версия — `0.1.3`.
+В `main` влит тег upstream `v0.1.5`; локальная версия — `0.1.5`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
-Теперь используем **собственный Electron 45.0.0**, собранный для Monterey,
+Теперь используем **собственный Electron 45.1.0**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.0.0-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.1.0-macos12-x64
 
-Архив: `electron-v45.0.0-macos12-darwin-x64.zip`.
-SHA256: `2807aaa78ef959402e62cb5cc348d37809d0a77470c2b1883a70ccd6ae0fd1ed`.
+Архив: `electron-v45.1.0-macos12-darwin-x64.zip`.
+SHA256: `fc813a0718e253f730c8b3c68225637b9d938b46910106add56f25c21d0c474f`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-45.0.0-macos12/dist`.
+`~/.local/t3-build-tools/electron-45.1.0-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -46,7 +46,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.3-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.5-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
@@ -65,7 +65,7 @@ x64 ZIP, подписывает приложение ad-hoc и перепако�
 PTY-процесс работают. WebGL сообщает NVIDIA OpenGL 3.3 через ANGLE;
 GPU-процесс автоматически получает `--use-angle=gl` без флагов на главном процессе.
 
-Electron 45.0.0 отдельно проверен на этом Mac: автоматический OpenGL,
+Electron 45.1.0 отдельно проверен на этом Mac: автоматический OpenGL,
 отрисовка WebGL1 и аппаратный композитинг. Проверка Metal выполнена
 на Radeon RX 6800 XT.
 

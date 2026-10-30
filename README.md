@@ -13,8 +13,8 @@ Older builds need one manual installation to enable this updater.
 
 ## Monterey and OpenGL support
 
-This fork uses our **custom Electron 45.0.0 / Chromium 156 build for macOS 12**,
-from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.0.0-macos12-x64).
+This fork uses our **custom Electron 45.1.0 / Chromium 156 build for macOS 12**,
+from [legacy-brave-electron-opengl](https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.1.0-macos12-x64).
 It replaces the earlier Electron 43.x pin.
 
 On Macs without a Metal device, the runtime automatically selects **ANGLE OpenGL**.
@@ -58,7 +58,7 @@ cannot read SVG on Monterey. Server data lives outside the app bundle in
 
 ## Updating and rebuilding
 
-The current upstream baseline is **v0.1.3**. See [FORK.md](FORK.md) for the
+The current upstream baseline is **v0.1.5**. See [FORK.md](FORK.md) for the
 compatibility differences, regression checks and merge procedure to preserve them.
 
 `origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
@@ -166,6 +166,16 @@ yay -S t3code-nightly-bin
 ```
 
 The AUR packaging is maintained in this repository under [`packaging/aur`](./packaging/aur).
+
+#### Nix (nixpkgs)
+
+```bash
+nix profile add github:NixOS/nixpkgs/nixos-unstable#t3code
+```
+
+The package is maintained in [nixpkgs](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/by-name/t3/t3code)
+and includes the desktop app (`t3code-desktop`) and the `t3` command.
+See [Nix installation](./docs/user/install.md#nix-nixpkgs) for NixOS configuration and updates.
 
 ## Some notes
 

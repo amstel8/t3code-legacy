@@ -1,6 +1,6 @@
 # Legacy Monterey fork
 
-Upstream baseline: **`pingdotgg/t3code` tag `v0.1.3`**.
+Upstream baseline: **`pingdotgg/t3code` tag `v0.1.5`**.
 Our default branch is `main`; `origin` is `amstel8/t3code-legacy` and `upstream`
 is `pingdotgg/t3code`. Use upstream tags and merge them; keep the fork commits
 in history rather than copying a new source snapshot over this checkout.
@@ -9,7 +9,7 @@ in history rather than copying a new source snapshot over this checkout.
 
 | Difference                                                                                                                        | Owner                                                                                                                         | Regression proof                                                                                     |
 | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Custom Electron 45.0.0, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
+| Custom Electron 45.1.0, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
 | Runtime override and Electron 45 ABI 150 (`patches/node-abi@4.33.0.patch`)                                                        | `apps/desktop/scripts/ensure-electron-runtime.mjs`, `scripts/build-desktop-artifact.ts`                                       | `scripts/build-desktop-artifact.test.ts` checks custom `electronDist` and no update feed             |
 | 60-second OpenCode 2 discovery deadline, including cold startup and stabilization                                                 | `packages/provider-opencode/src/server/status.ts`                                                                             | `status.legacy.test.ts`: 45-second cold start, bounded changing/empty catalogs and slow warm refresh |
 | A successful OpenCode refresh with explicit empty options clears stale variants; partial/failed discovery retains useful metadata | `apps/server/src/provider/ProviderRegistry.ts`                                                                                | `ProviderRegistry.legacy.test.ts`: ready/empty, error/empty and missing metadata for several models  |
