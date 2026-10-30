@@ -90,3 +90,5 @@ as an asset, or regenerate it for routine builds. The public key is tracked in
 clean committed source and the matching private key. Existing releases without
 a signed manifest are ignored; old installations need one manual installation
 of the first updater-enabled build. Only the stable channel is supported.
+Release ZIP requests allow up to one hour on slow CDN connections; the installed
+0.1.3 client retains its original 15-minute limit until it has been updated.

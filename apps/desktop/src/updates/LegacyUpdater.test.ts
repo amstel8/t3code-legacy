@@ -42,6 +42,7 @@ beforeEach(async () => {
   Object.defineProperty(process, "resourcesPath", { configurable: true, value: resources });
 });
 afterEach(async () => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   if (originalResources) Object.defineProperty(process, "resourcesPath", originalResources);
   else Reflect.deleteProperty(process, "resourcesPath");
@@ -87,19 +88,49 @@ describe("legacy in-app updater", () => {
     expect(available).not.toHaveBeenCalled();
     expect(unavailable).toHaveBeenCalledTimes(2);
   });
-  it("discards corrupted downloads before extraction and installation", async () => {
+  it("keeps slow downloads active and discards corrupted data before installation", async () => {
+    const deadlines: Array<{ after: number; controller: AbortController }> = [];
+    vi.spyOn(AbortSignal, "timeout").mockImplementation((after) => {
+      const controller = new AbortController();
+      deadlines.push({ after, controller });
+      return controller.signal;
+    });
+    const started = Promise.withResolvers<void>();
+    let bodyController: ReadableStreamDefaultController<Uint8Array> | undefined;
+    let bodySignal: AbortSignal | undefined;
     vi.stubGlobal(
       "fetch",
       vi
         .fn()
         .mockResolvedValueOnce(new Response(signed(manifest)))
-        .mockResolvedValueOnce(new Response("bad!")),
+        .mockImplementationOnce((_url: string, options: RequestInit) => {
+          bodySignal = options.signal ?? undefined;
+          const body = new ReadableStream<Uint8Array>({
+            start(controller) {
+              bodyController = controller;
+              bodySignal?.addEventListener("abort", () => controller.error(bodySignal?.reason));
+              started.resolve();
+            },
+          });
+          return Promise.resolve(new Response(body));
+        }),
     );
     const updater = new LegacyUpdater();
     const downloaded = vi.fn();
     updater.on("update-downloaded", downloaded);
     await updater.checkForUpdates();
-    await expect(updater.downloadUpdate()).rejects.toThrow("checksum");
+    const download = updater.downloadUpdate();
+    void download.catch(() => {});
+    await started.promise;
+    for (const deadline of deadlines) {
+      if (deadline.after <= 16 * 60_000) {
+        deadline.controller.abort(new DOMException("Download timed out", "TimeoutError"));
+      }
+    }
+    expect(bodySignal?.aborted).toBe(false);
+    bodyController?.enqueue(new TextEncoder().encode("bad!"));
+    bodyController?.close();
+    await expect(download).rejects.toThrow("checksum");
     expect(downloaded).not.toHaveBeenCalled();
     expect(await NodeFSP.readdir(directory)).toEqual(["T3.app"]);
     await expect(updater.quitAndInstall(true, true)).rejects.toThrow("No verified update");

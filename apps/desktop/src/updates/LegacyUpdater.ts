@@ -80,7 +80,7 @@ export class LegacyUpdater extends NodeEvents.EventEmitter {
     try {
       const response = await fetch(
         `https://github.com/${repository}/releases/download/${manifest.tag}/${manifest.artifact}`,
-        { signal: AbortSignal.timeout(15 * 60_000) },
+        { signal: AbortSignal.timeout(60 * 60_000) },
       );
       if (!response.ok || !response.body)
         throw new Error(`Download failed: HTTP ${response.status}.`);
