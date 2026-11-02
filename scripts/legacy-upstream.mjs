@@ -15,7 +15,10 @@ const release = JSON.parse(run(["gh", "api", "repos/pingdotgg/t3code/releases/la
 const tag = process.argv[3] || release.tag_name;
 if (!/^v\d+\.\d+\.\d+$/.test(tag)) throw new Error("Only stable upstream tags are supported.");
 const version = tag.slice(1);
-const workspace = NodePath.join(NodePath.dirname(root), `t3code-release-${version}`);
+const projectRoot = NodePath.dirname(
+  NodePath.resolve(root, run(["git", "rev-parse", "--git-common-dir"])),
+);
+const workspace = NodePath.join(projectRoot, ".worktrees", `release-${version}`);
 if (mode === "check") {
   console.log(
     JSON.stringify({ upstream: release.tag_name, url: release.html_url, workspace }, null, 2),

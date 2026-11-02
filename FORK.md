@@ -64,7 +64,8 @@ instructions; [README.md](README.md) is the download entry point.
 ## Release automation and in-app updates
 
 `node scripts/legacy-upstream.mjs check` discovers the latest stable upstream.
-`prepare [vX.Y.Z]` creates a sibling worktree and merges without committing;
+`prepare [vX.Y.Z]` creates a worktree under `.worktrees/release-X.Y.Z` inside
+the main project checkout and merges without committing;
 conflicts stop there for review. Preserve the compatibility table above, stamp
 the four release package versions, and commit the reviewed source. In that
 worktree run `build vX.Y.Z`, then `draft vX.Y.Z` to push its branch and create
