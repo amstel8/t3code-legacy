@@ -58,7 +58,7 @@ cannot read SVG on Monterey. Server data lives outside the app bundle in
 
 ## Updating and rebuilding
 
-The current upstream baseline is **v0.1.7**. See [FORK.md](FORK.md) for the
+The current upstream baseline is **v0.1.8**. See [FORK.md](FORK.md) for the
 compatibility differences, regression checks and merge procedure to preserve them.
 
 `origin` is `amstel8/t3code-legacy`; `upstream` is `pingdotgg/t3code`.
@@ -120,7 +120,7 @@ irm https://t3.codes/install.ps1 | iex
 
 Then run `t3` to start the server and open the local web app. `t3 service install` keeps it running in the background, `t3 update` moves to a newer release, and `t3 --help` has the full reference.
 
-To try it once without installing, run `npx t3@latest` instead.
+To try it once without installing, run `npx t3@latest`. It offers to install the `t3` command for you.
 
 ### Desktop app
 
