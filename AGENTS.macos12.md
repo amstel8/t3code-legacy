@@ -1,23 +1,23 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.8`; локальная версия — `0.1.8`.
+В `main` влит тег upstream `v0.1.9`; локальная версия — `0.1.9`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
-Теперь используем **собственный Electron 45.2.1**, собранный для Monterey,
+Теперь используем **собственный Electron 45.3.0**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.2.1-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.3.0-macos12-x64
 
-Архив: `electron-v45.2.1-macos12-darwin-x64.zip`.
-SHA256: `9e73c1117d1007476af3c5e93391476db2ac2d715f8be59d51c33a13fa7b4cce`.
+Архив: `electron-v45.3.0-macos12-darwin-x64.zip`.
+SHA256: `ca05c2e015496358858f454a0689670e76c09b085c4240bca8adff71579110b9`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-45.2.1-macos12/dist`.
+`~/.local/t3-build-tools/electron-45.3.0-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -46,7 +46,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.8-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.9-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
