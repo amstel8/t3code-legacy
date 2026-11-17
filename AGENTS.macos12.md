@@ -1,23 +1,23 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.9`; локальная версия — `0.1.9`.
+В `main` влит тег upstream `v0.1.10`; локальная версия — `0.1.10`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
-Теперь используем **собственный Electron 45.3.0**, собранный для Monterey,
+Теперь используем **собственный Electron 45.3.2**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.3.0-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.3.2-macos12-x64
 
-Архив: `electron-v45.3.0-macos12-darwin-x64.zip`.
-SHA256: `ca05c2e015496358858f454a0689670e76c09b085c4240bca8adff71579110b9`.
+Архив: `electron-v45.3.2-macos12-darwin-x64.zip`.
+SHA256: `00b92e40030bac4525448f8f99a993029360007b63185797a23d17ff7bf622b0`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-45.3.0-macos12/dist`.
+`~/.local/t3-build-tools/electron-45.3.2-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -46,7 +46,7 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.9-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.10-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
@@ -79,14 +79,12 @@ T3CODE_HOME отделяет серверное состояние, но Electro
 Не убивать процессы по шаблону — см. правило 1 в `AGENTS.md`.
 Не запускать проверочный сервер против `~/.t3/userdata`.
 
-Для OpenCode 2 сохранять 60-секундный лимит в
+Для OpenCode 2 сохранять 60-секундный лимит стабилизации каталога в
 `packages/provider-opencode/src/server/status.ts` (`makeOpenCode2ModelLoader`).
-Он включает запуск сервера и чтение каталога; прежние 5 секунд на T9900
-обрывали запрос моделей до готовности каталога. Проверка медленного запуска
-находится в `packages/provider-opencode/src/server/status.legacy.test.ts`.
-Отдельной настройки таймаута в интерфейсе нет. После обновления upstream
-проверять, что этот лимит и тест сохранились; установка другого готового
-приложения может заменить исправление.
+Upstream отдельно ждёт первый ответ и активацию плагинов до двух минут;
+этот этап не входит в лимит стабилизации. Проверки медленного старта и
+чтения каталога находятся в `status.legacy.test.ts`. Установка официальной
+сборки может заменить наши настройки времени ожидания.
 
 Обновления из форка включены через подписанный `legacy-update.json`;
 штатный интерфейс проверяет только `amstel8/t3code-legacy`.

@@ -18,7 +18,7 @@ it.effect("waits for a fresh OpenCode 2 server to list its models", () =>
     const replies: Array<ReadonlyArray<OpenCode2Model>> = [[], [], [bigPickle]];
     const load = yield* makeOpenCode2ModelLoader(Effect.sync(() => replies.shift() ?? [bigPickle]));
     const fiber = yield* load.pipe(Effect.forkChild);
-    yield* TestClock.adjust("1 second");
+    yield* TestClock.adjust("2 seconds");
     NodeAssert.deepEqual(yield* Fiber.join(fiber), [bigPickle]);
   }).pipe(Effect.provide(TestClock.layer())),
 );
@@ -76,11 +76,17 @@ it.effect("waits for a growing OpenCode 2 catalog to settle before caching it", 
       [first, second],
       [first, second],
     ];
+    let reads = 0;
     const load = yield* makeOpenCode2ModelLoader(
-      Effect.sync(() => replies.shift() ?? [first, second]),
+      Effect.gen(function* () {
+        if (reads++ > 0) yield* Effect.sleep("6 seconds");
+        return replies.shift() ?? [first, second];
+      }),
     );
     const fiber = yield* load.pipe(Effect.forkChild);
-    yield* TestClock.adjust("1 second");
+    yield* TestClock.adjust("6 seconds");
+    NodeAssert.equal(fiber.pollUnsafe(), undefined, "Slow catalog reads must outlast five seconds");
+    yield* TestClock.adjust("13 seconds");
     NodeAssert.ok(fiber.pollUnsafe(), "A settled catalog should finish before the load deadline");
     NodeAssert.deepEqual(yield* Fiber.join(fiber), [first, second]);
   }).pipe(Effect.provide(TestClock.layer())),
@@ -96,7 +102,7 @@ it.effect("waits for OpenCode 2 model names, provider labels, and variants to se
     const replies = [[bigPickle], [renamed], [labeled], [withVariants], [complete], [reordered]];
     const load = yield* makeOpenCode2ModelLoader(Effect.sync(() => replies.shift() ?? [complete]));
     const fiber = yield* load.pipe(Effect.forkChild);
-    yield* TestClock.adjust("1500 millis");
+    yield* TestClock.adjust("3 seconds");
     NodeAssert.ok(
       fiber.pollUnsafe(),
       "Equivalent variant orders should settle before the deadline",
@@ -150,7 +156,7 @@ it.effect(
       let slow = false;
       const load = yield* makeOpenCode2ModelLoader(
         Effect.gen(function* () {
-          if (slow) yield* Effect.sleep("31 seconds");
+          if (slow) yield* Effect.sleep("61 seconds");
           return listed;
         }),
       );
@@ -161,7 +167,7 @@ it.effect(
       listed = [{ ...bigPickle, name: "Fresh Pickle" }];
       slow = true;
       const fresh = yield* load.pipe(Effect.forkChild);
-      yield* TestClock.adjust("60 seconds");
+      yield* TestClock.adjust("122 seconds");
       NodeAssert.ok(fresh.pollUnsafe());
       NodeAssert.deepEqual(yield* Fiber.join(fresh), listed);
     }).pipe(Effect.provide(TestClock.layer())),

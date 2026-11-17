@@ -1,6 +1,6 @@
 # Legacy Monterey fork
 
-Upstream baseline: **`pingdotgg/t3code` tag `v0.1.9`**.
+Upstream baseline: **`pingdotgg/t3code` tag `v0.1.10`**.
 Our default branch is `main`; `origin` is `amstel8/t3code-legacy` and `upstream`
 is `pingdotgg/t3code`. Use upstream tags and merge them; keep the fork commits
 in history rather than copying a new source snapshot over this checkout.
@@ -9,11 +9,11 @@ in history rather than copying a new source snapshot over this checkout.
 
 | Difference                                                                                                                        | Owner                                                                                                                         | Regression proof                                                                                     |
 | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Custom Electron 45.3.0, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
+| Custom Electron 45.3.2, macOS 12 and automatic OpenGL on Macs without Metal                                                       | `apps/desktop/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`; archive URL and checksum in `rebuild-t3code-macos12.sh` | Final app signature, Mach-O minimum OS, runtime version and GUI on real hardware                     |
 | Runtime override and Electron 45 ABI 150 (`patches/node-abi@4.33.0.patch`)                                                        | `apps/desktop/scripts/ensure-electron-runtime.mjs`, `scripts/build-desktop-artifact.ts`                                       | `scripts/build-desktop-artifact.test.ts` checks custom `electronDist` and no update feed             |
-| 60-second OpenCode 2 discovery deadline, including cold startup and stabilization                                                 | `packages/provider-opencode/src/server/status.ts`                                                                             | `status.legacy.test.ts`: 45-second cold start, bounded changing/empty catalogs and slow warm refresh |
+| 60-second OpenCode 2 catalog settling deadline, plus upstream two-minute plugin activation wait                                   | `packages/provider-opencode/src/server/status.ts`                                                                             | `status.legacy.test.ts`: 45-second cold start, bounded changing/empty catalogs and slow warm refresh |
 | A successful OpenCode refresh with explicit empty options clears stale variants; partial/failed discovery retains useful metadata | `apps/server/src/provider/ProviderRegistry.ts`                                                                                | `ProviderRegistry.legacy.test.ts`: ready/empty, error/empty and missing metadata for several models  |
-| Build on our Monterey-compatible Node 24.13.1 toolchain; allow upstream Node 26.12.1 as well                                      | root `package.json`, `rebuild-t3code-macos12.sh`                                                                              | Targeted typechecks, actual bundle load and packaged Node runtime                                    |
+| Build on our Monterey-compatible Node 24.13.1 toolchain; allow upstream Node 26.13.1 as well                                      | root `package.json`, `rebuild-t3code-macos12.sh`                                                                              | Targeted typechecks, actual bundle load and packaged Node runtime                                    |
 | Signed ZIP, signed fork manifest and no upstream update feed                                                                      | `rebuild-t3code-macos12.sh`                                                                                                   | Verify signature, checksums and absence of `app-update.yml` in the final archive                     |
 
 The 30-second **OpenCode server plugin activation** wait is a separate change
