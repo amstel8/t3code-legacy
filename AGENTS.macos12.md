@@ -1,23 +1,23 @@
 # T3 Code для macOS 12 / Intel
 
 Форк: `amstel8/t3code-legacy` (`origin`). Upstream: `pingdotgg/t3code`.
-В `main` влит тег upstream `v0.1.11`; локальная версия — `0.1.11`.
+В `main` влит тег upstream `v0.1.12`; локальная версия — `0.1.12`.
 Отличия форка и порядок следующих обновлений: [FORK.md](FORK.md). PR в upstream не нужен.
 
 ## Runtime
 
-Теперь используем **собственный Electron 45.3.4**, собранный для Monterey,
+Теперь используем **собственный Electron 45.4.1**, собранный для Monterey,
 вместо прежнего пина на официальный 43.x. Официальный npm Electron 44
 по-прежнему требует macOS 13: одного изменения номера зависимости недостаточно.
 
-Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.3.4-macos12-x64
+Источник: https://github.com/amstel8/legacy-brave-electron-opengl/releases/tag/electron-v45.4.1-macos12-x64
 
-Архив: `electron-v45.3.4-macos12-darwin-x64.zip`.
-SHA256: `a7c2e7e51e732c7994c1bf40c6d0bf27e227508ba4dcba05341d9ab5b239a2bd`.
+Архив: `electron-v45.4.1-macos12-darwin-x64.zip`.
+SHA256: `d743a48f98215046a5fe6f36dd23dd5feee12ff0f97b85d25c35ed2b538d0231`.
 
 `rebuild-t3code-macos12.sh` скачивает этот конкретный релиз при отсутствии
 runtime, проверяет SHA256 и распаковывает в
-`~/.local/t3-build-tools/electron-45.3.4-macos12/dist`.
+`~/.local/t3-build-tools/electron-45.4.1-macos12/dist`.
 Можно задать другой распакованный runtime через `T3CODE_ELECTRON_DIST`:
 каталог должен содержать `Electron.app` и `version`, совпадающий с зависимостью
 `electron` в `apps/desktop/package.json`.
@@ -46,12 +46,16 @@ Rust и системные build tools доступны через `/opt/local/b
 x64 ZIP, подписывает приложение ad-hoc и перепаковывает подписанный `.app`.
 Используется ZIP: `sips` на Monterey не конвертирует SVG-фон для DMG.
 
-Результат: `release/T3-Code-0.1.11-x64.zip`, `release/SHA256SUMS.txt`.
+Результат: `release/T3-Code-0.1.12-x64.zip`, `release/SHA256SUMS.txt`.
 Приложение теперь называется `T3 Code (Beta).app`.
 
 При обновлении Electron поменять версию зависимости, исключение
 `minimumReleaseAgeExclude`, URL/контрольную сумму/кэш в скрипте.
 Не использовать плавающую ссылку на latest: в репозитории есть также Brave.
+
+Нативный Apple Speech helper требует macOS 26 и Xcode 26. Обёртка отключает
+его компиляцию и упаковку через `T3CODE_DESKTOP_SKIP_APPLE_SPEECH=true`.
+Вариант распознавания речи через `transcribe-cpp` остаётся в пакете.
 
 ## Проверка и установка
 

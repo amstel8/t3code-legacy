@@ -4,10 +4,10 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")" && pwd)"
-export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-45.3.4-macos12/dist}"
+export T3CODE_ELECTRON_DIST="${T3CODE_ELECTRON_DIST:-$HOME/.local/t3-build-tools/electron-45.4.1-macos12/dist}"
 # Pin the release and checksum together when upgrading our Electron.
-ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v45.3.4-macos12-x64/electron-v45.3.4-macos12-darwin-x64.zip"
-ELECTRON_SHA256="a7c2e7e51e732c7994c1bf40c6d0bf27e227508ba4dcba05341d9ab5b239a2bd"
+ELECTRON_URL="https://github.com/amstel8/legacy-brave-electron-opengl/releases/download/electron-v45.4.1-macos12-x64/electron-v45.4.1-macos12-darwin-x64.zip"
+ELECTRON_SHA256="d743a48f98215046a5fe6f36dd23dd5feee12ff0f97b85d25c35ed2b538d0231"
 if [ ! -f "$T3CODE_ELECTRON_DIST/version" ]; then
   ELECTRON_CACHE="$(dirname "$T3CODE_ELECTRON_DIST")"
   mkdir -p "$ELECTRON_CACHE"
@@ -77,6 +77,8 @@ pnpm verify:legacy
 APP_VERSION="${T3CODE_VERSION:-$(node -p 'require("./apps/desktop/package.json").version')}"
 unset GITHUB_REPOSITORY T3CODE_DESKTOP_UPDATE_REPOSITORY
 export MACOSX_DEPLOYMENT_TARGET=12.0
+# Apple Speech requires macOS 26 and is unavailable on our Monterey target.
+export T3CODE_DESKTOP_SKIP_APPLE_SPEECH=true
 node scripts/build-desktop-artifact.ts --platform mac --target zip --arch x64 --build-version "$APP_VERSION"
 
 ZIP="$REPO/release/T3-Code-${APP_VERSION}-x64.zip"
